@@ -7,6 +7,6 @@ import lombok.Setter;
 @Setter
 public class UserMetadata {
     private String phoneNumber;
+    // Assumption: we will need this id to send push-notification to the end user
     private String id;
-    private Object firebaseData;
 }

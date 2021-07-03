@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import com.example.demo.dtos.CreateNotificationRequest;
+import com.example.demo.dtos.NotificationRequestDto;
 import com.example.demo.dtos.UserMetadata;
 import com.example.demo.enums.NotificationType;
 import com.example.demo.exceptions.BadRequestException;
@@ -16,13 +16,13 @@ public class DataValidatorsTest {
     @Test
     void testValidateCreateNotificationRequest() {
 
-        CreateNotificationRequest request = new CreateNotificationRequest();
+        NotificationRequestDto request = new NotificationRequestDto();
 
         Assertions.assertThrows(BadRequestException.class, () -> {
             DataValidators.validate(request);
         });
 
-        request.setNotificationType(NotificationType.SMS);
+        request.setNotificationType(NotificationType.SMS.name());
         Assertions.assertThrows(MissingIdException.class, () -> {
             DataValidators.validate(request);
         });

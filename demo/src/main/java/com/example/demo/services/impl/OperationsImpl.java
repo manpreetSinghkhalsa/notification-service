@@ -1,6 +1,9 @@
 package com.example.demo.services.impl;
 
-import com.example.demo.dtos.CreateNotificationRequest;
+import com.example.demo.bos.NotificationBo;
+import com.example.demo.converters.Converter;
+import com.example.demo.converters.SmsDtoConverter;
+import com.example.demo.dtos.NotificationRequestDto;
 import com.example.demo.internal.dtos.PushNotificationDto;
 import com.example.demo.internal.dtos.SmsDto;
 import com.example.demo.services.Operations;
@@ -19,37 +22,43 @@ public class OperationsImpl implements Operations {
     @Autowired
     private PushNotification pushNotification;
 
+    @Autowired
+    private Converter<NotificationBo, NotificationRequestDto> notificationRequestConverter;
+
+    @Autowired
+    private Converter<NotificationBo, SmsDto> smsDtoConverter;
+
+    @Autowired
+    private Converter<NotificationBo, PushNotificationDto> pushNotificationDtoConverter;
+
     @Override
-    public void generateNotification(CreateNotificationRequest request) {
+    public void generateNotification(NotificationRequestDto request) {
         DataValidators.validate(request);
-        sendNotification(request);
+        NotificationBo bo = notificationRequestConverter.convertToBo(request);
+        sendNotification(bo);
     }
 
-    void sendNotification(CreateNotificationRequest request) {
+    private void sendNotification(NotificationBo notificationBo) {
 
-        switch (request.getNotificationType()) {
+        switch (notificationBo.getNotificationType()) {
 
             case SMS:
-                initiateSmsNotification(request);
+                initiateSmsNotification(notificationBo);
                 break;
 
             case PUSH_NOTIFICATION:
-                initiatePushNotification(request);
+                initiatePushNotification(notificationBo);
                 break;
         }
     }
 
-    private void initiateSmsNotification(CreateNotificationRequest request) {
-        List<SmsDto> dtos = SmsDto.convertToDto(request);
-        for (SmsDto dto : dtos) {
-            smsNotification.send(dto);
-        }
+    private void initiateSmsNotification(NotificationBo bo) {
+        List<SmsDto> smsDtoList = smsDtoConverter.convertToDtoList(bo);
+        smsDtoList.forEach(smsNotification::send);
     }
 
-    private void initiatePushNotification(CreateNotificationRequest request) {
-        List<PushNotificationDto> dtos = PushNotificationDto.convertToDto(request);
-        for (PushNotificationDto dto : dtos) {
-            pushNotification.send(dto);
-        }
+    private void initiatePushNotification(NotificationBo bo) {
+        List<PushNotificationDto> pushNotificationDtoList = pushNotificationDtoConverter.convertToDtoList(bo);
+        pushNotificationDtoList.forEach(pushNotification::send);
     }
 }

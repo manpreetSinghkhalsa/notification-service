@@ -1,9 +1,11 @@
 package com.example.demo.validators;
 
-import com.example.demo.dtos.CreateNotificationRequest;
+import com.example.demo.dtos.NotificationRequestDto;
+import com.example.demo.dtos.UserMetadata;
 import com.example.demo.enums.NotificationType;
 import com.example.demo.exceptions.BadRequestException;
 import com.example.demo.exceptions.MissingIdException;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
 
@@ -34,24 +36,44 @@ public class DataValidators {
         }
     }
 
-    private static void validateEnumValues(NotificationType type) {
+    public static <T extends Enum<T>> T enumValue(String string, Class<T> enumClass, String fieldName) {
 
-        if (type == null) {
-            throw new BadRequestException("Notification type can not be null");
+        if (StringUtils.isBlank(string)) {
+            throw new BadRequestException("Invalid value for " + fieldName);
         }
 
-        switch(type) {
-            case PUSH_NOTIFICATION:
-            case SMS:
-                return;
+        try {
+            return Enum.valueOf(enumClass, string.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid value for " + fieldName);
         }
-
-        throw new BadRequestException("Invalid notification type");
     }
 
-    public static void validate(CreateNotificationRequest request) {
-        validateEnumValues(request.getNotificationType());
+    private static void validateUsersMetadata(Map<String, UserMetadata> metadata, NotificationType type) {
+
+        for (UserMetadata userMetadata : metadata.values()) {
+
+            switch (type) {
+
+                case SMS:
+                    if (userMetadata.getPhoneNumber() == null || userMetadata.getPhoneNumber().trim().isEmpty()) {
+                        throw new BadRequestException("Phone number and Firebase id, both can not empty");
+                    }
+                    break;
+
+                case PUSH_NOTIFICATION:
+                    if (userMetadata.getId() == null || userMetadata.getId().trim().isEmpty()) {
+                        throw new BadRequestException("Firebase id can not empty");
+                    }
+                    break;
+            }
+        }
+    }
+
+    public static void validate(NotificationRequestDto request) {
+        NotificationType type = enumValue(request.getNotificationType(), NotificationType.class, "Notification type");
         validate(request.getText(), "Notification text");
         validateNotNull(request.getUsersMetadata(), "Users metadata can not be null");
+        validateUsersMetadata(request.getUsersMetadata(), type);
     }
 }

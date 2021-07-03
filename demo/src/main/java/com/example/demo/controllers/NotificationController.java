@@ -1,6 +1,8 @@
 package com.example.demo.controllers;
 
-import com.example.demo.dtos.CreateNotificationRequest;
+import com.example.demo.bos.NotificationBo;
+import com.example.demo.converters.Converter;
+import com.example.demo.dtos.NotificationRequestDto;
 import com.example.demo.services.Operations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,8 +23,8 @@ public class NotificationController {
      * Single api to support bulk and single notification
      */
     @PostMapping
-    public ResponseEntity<?> sendNotification(@RequestBody CreateNotificationRequest body) {
+    public ResponseEntity<?> sendNotification(@RequestBody NotificationRequestDto body) {
         operations.generateNotification(body);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
