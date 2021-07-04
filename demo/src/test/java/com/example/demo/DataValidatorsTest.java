@@ -39,7 +39,7 @@ public class DataValidatorsTest {
         });
 
         HashMap<String, UserMetadata> data = new HashMap<>();
-        data.put("user-id", new UserMetadata());
+        data.put("user-id", new UserMetadata("123456789", ""));
 
         request.setUsersMetadata(data);
 
